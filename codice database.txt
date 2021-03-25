@@ -1,0 +1,815 @@
+---TABELLE
+
+create table software_house (nome varchar(89) primary key,
+anno_fondazione int,
+sede_principale varchar(89),
+n_giochi_sviluppati int default 0, 
+n_giochi_distribuiti int default 0) engine="innodb";
+
+
+create table videogiochi (nome varchar(89) primary key,
+tipologia varchar(89) not null,
+serie varchar(89),
+pegi varchar(89),
+stato varchar(89) not null,
+anno varchar(89), 
+index ind_serie(serie),
+foreign key (serie) references serie(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table edizione_videogiochi (nome varchar(89),
+edizione varchar(89),
+versione varchar(89), 
+stato varchar(89) not null,
+anno varchar(89), 
+index ind_nome(nome),
+primary key(nome,edizione,versione),
+foreign key (nome) references videogiochi(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table engine (nome varchar(89) primary key,
+tipologia varchar(89) not null) engine="innodb";
+
+
+create table console (nome varchar(89) primary key,
+anno_uscita int not null,
+generazione varchar(89)) engine="innodb";
+
+
+create table genere (nome varchar(89) primary key) engine="innodb";
+
+
+create table serie (nome varchar(89) primary key,
+anno_creazione int not null) engine="innodb";
+
+
+
+create table game_director (nome varchar(89) primary key,
+software_house varchar(89),
+n_giochi_diretti int default 0,
+anno_inizio int,
+anni_in_azienda int,
+età int not null,
+data_di_nascita date not null,
+index ind_software_house(software_house),
+foreign key(software_house) references software_house(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table distribuzione(videogiochi varchar(89) not null,
+software_house varchar(89) not null,
+index ind_videogiochi(videogiochi),
+index ind_software_house(software_house),
+primary key(videogiochi, software_house),
+foreign key(videogiochi) references videogiochi(nome) on update cascade on delete no action, 
+foreign key(software_house) references software_house(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table sviluppo(videogiochi varchar(89) not null,
+software_house varchar(89) not null,
+primary key(videogiochi, software_house),
+index ind_videogiochi(videogiochi),
+index ind_software_house(software_house),
+foreign key(videogiochi) references videogiochi(nome) on update cascade on delete no action, 
+foreign key(software_house) references software_house(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table direzione(videogiochi varchar(89) not null,
+director varchar(89) not null,
+primary key(videogiochi, director),
+index ind_videogiochi(videogiochi),
+index ind_director(director),
+foreign key(videogiochi) references videogiochi(nome) on update cascade on delete no action,
+foreign key(director) references game_director(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table lavoro_passato(director varchar(89) not null,
+software_house varchar(89) not null,
+anno_inizio int not null,
+anno_fine int not null,
+anni_in_azienda int not null,
+primary key(director, software_house),
+index ind_director(director),
+index ind_software_house(software_house),
+foreign key (director) references game_director(nome) on update cascade on delete no action,
+foreign key (software_house) references software_house(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table appartenenza_genere(videogiochi varchar(89) not null,
+genere varchar(89) not null,
+primary key(videogiochi, genere),
+index ind_videogiochi(videogiochi),
+index ind_genere(genere),
+foreign key(videogiochi) references videogiochi(nome) on update cascade on delete no action,
+foreign key(genere) references genere(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table ideazione(director varchar(89),
+serie varchar(89),
+primary key(director, serie),
+index ind_serie(serie),
+index ind_director(director),
+foreign key(director) references game_director(nome) on update cascade on delete no action,
+foreign key(serie) references serie(nome) on update cascade on delete cascade) engine="innodb";
+
+
+create table disponibilità_edizione(videogiochi varchar(89) not null,
+edizione varchar(89) not null,
+console varchar(89) not null,
+versione varchar(89) not null,
+primary key(videogiochi,edizione, console,versione),
+index ind_videogiochi(videogiochi),
+index ind_edizione(edizione),
+index ind_console(console),
+foreign key(videogiochi,edizione,versione) references edizione_videogiochi(nome,edizione,versione) on update cascade on delete no action,
+foreign key(console) references console(nome)on update cascade on delete no action) engine="innodb";
+
+
+create table disponibilità(videogiochi varchar(89) not null,
+console varchar(89) not null,
+primary key(videogiochi, console),
+index ind_videogiochi(videogiochi),
+index ind_console(console),
+foreign key(videogiochi) references videogiochi(nome) on update cascade on delete no action,
+foreign key(console) references console(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table sviluppo_motore(software_house varchar(89) not null,
+engine varchar(89) not null,
+primary key(software_house, engine),
+index ind_software_house(software_house),
+index ind_engine(engine), 
+foreign key(software_house) references software_house(nome) on update cascade on delete no action,
+foreign key(engine) references engine(nome) on update cascade on delete no action) engine="innodb";
+
+
+create table utilizza_motore(videogiochi varchar(89) not null,
+engine varchar(89) not null,
+primary key(videogiochi, engine),
+index ind_videogiochi(videogiochi),
+index ind_engine(engine), 
+foreign key(videogiochi) references videogiochi(nome) on update cascade on delete no action,
+foreign key(engine) references engine(nome) on update cascade on delete no action) engine="innodb";
+
+
+
+--VISTE
+
+
+create view videogiochi_in_sviluppo as select *
+from videogiochi as a
+where stato in ("in sviluppo")
+with check option;
+
+
+create view videogiochi_disponibili as select *
+from videogiochi as a
+where stato in ("disponibile")
+with check option;
+
+
+create view edizioni_videogiochi_in_sviluppo as select *
+from edizione_videogiochi as a
+where stato in ("in sviluppo")
+with check option;
+
+
+create view edizioni_videogiochi_disponibili as select *
+from edizione_videogiochi as a
+where stato in ("disponibile")
+with check option;
+
+
+create view videogiochi_aaa as select *
+from videogiochi as a
+where tipologia in ("aaa")
+with check option;
+
+
+create view videogiochi_indie as select *
+from videogiochi as a
+where tipologia in ("indie")
+with check option;
+
+
+create view informazioni_generali as select s.videogiochi as videogiochi, s.software_house 
+as software_house, 
+d.director as director from
+sviluppo as s join direzione as d on s.videogiochi=d.videogiochi
+With check option;
+
+
+--TRIGGER GENERALIZZAZIONI
+
+
+create trigger insert_console
+before insert 
+on console 
+for each row
+begin
+if new.nome not in("ps4","ps3","ps2","ps1","psp","pc","xbox","xbox one","xbox 360","nintendo wii","nintendo switch","nintendo ds") then
+signal sqlstate '45000' 
+set message_text="non puoi inserire questa console prova con una tra: ps1, ps2,ps3,ps4,psp,pc, nintendo wii, nintendo ds, nintendo switch, xbox,xbox 360, xbox one";
+end if;
+end /
+
+
+
+create trigger update_console
+before update
+on console 
+for each row
+begin
+if new.nome not in("ps4","ps3","ps2","ps1","psp","pc","xbox","xbox one","xbox 360","nintendo wii","nintendo switch","nintendo ds") then
+signal sqlstate '45000' 
+set message_text="non puoi inserire questa console prova con una tra: ps1, ps2,ps3,ps4,psp,pc, nintendo wii, nintendo ds, nintendo switch, xbox,xbox 360, xbox one";
+end if;
+end /
+
+
+create trigger insert_tipologia
+before insert 
+on videogiochi
+for each row
+begin
+if new.tipologia not in ("AAA","indie") then
+signal sqlstate '45000' 
+set message_text="non puoi inserire questa tipologia prova con una tra: AAA o indie";
+end if;
+end /
+
+
+create trigger update_tipologia
+before update
+on videogiochi 
+for each row
+begin
+if new.tipologia not in ("AAA","indie") then
+signal sqlstate '45000' 
+set message_text="non puoi inserire questa tipologia prova con una tra: AAA o indie";
+end if;
+end /
+
+
+create trigger insert_versione
+before insert 
+on edizione_videogiochi
+for each row
+begin
+if new.versione not in("retail","digitale") then
+signal sqlstate '45000' 
+set message_text="non puoi scrivere questo, prova con retail o digitale";
+end if;
+end /
+
+
+create trigger update_versione
+before update
+on edizione_videogiochi 
+for each row
+begin
+if new.versione not in("retail","digitale","non specificato") then
+signal sqlstate '45000' 
+set message_text="non puoi scrivere questo, prova con retail o digitale";
+end if;
+end /
+
+
+create trigger insert_engine
+before insert 
+on engine
+for each row
+begin
+if new.tipologia not in("grafico","fisico") then
+signal sqlstate '45000' 
+set message_text="non puoi scrivere questo, prova con grafico o fisico";
+end if;
+end /
+
+
+create trigger update_engine
+before update
+on engine
+for each row
+begin
+if new.tipologia not in("grafico","fisico") then
+signal sqlstate '45000' 
+set message_text="non puoi scrivere questo, prova con grafico o fisico";
+end if;
+end /
+
+
+
+-- TRIGGER BUSINESS RULES
+
+
+create trigger insert_stato
+before insert 
+on edizione_videogiochi
+for each row
+begin
+if new.stato not in ("in sviluppo","disponibile") then
+signal sqlstate '45000' 
+set message_text="seleziona una tra questi stati:in sviluppo o  disponibile";
+end if;
+end /
+
+
+create trigger update_stato
+before update
+on edizione_videogiochi 
+for each row
+begin
+if new.stato not in ("in sviluppo","disponibile") then
+signal sqlstate '45000' 
+set message_text="seleziona una tra questi stati:in sviluppo o  disponibile";
+end if;
+end /
+
+
+create trigger insert_anno
+before insert 
+on edizione_videogiochi
+for each row
+begin
+if new.anno < 1990 then
+signal sqlstate '45000' 
+set message_text="non è possibile inserire un gioco con questa data";
+end if;
+end /
+
+
+
+create trigger update_anno
+before update
+on edizione_videogiochi
+for each row
+begin
+if (old.anno <> "tba") and (old.anno < 1990) then
+signal sqlstate '45000' 
+set message_text="non è possibile inserire un gioco con questa data";
+elseif (new.anno <> "tba") and (new.anno < 1990) then
+signal sqlstate '45000' 
+set message_text="non è possibile inserire un gioco con questa data";
+end if;
+end /
+
+
+
+create trigger insert_anno1
+before insert 
+on videogiochi
+for each row
+begin
+if new.anno < 1990 then
+signal sqlstate '45000' 
+set message_text="non è possibile inserire un gioco con questa data";
+end if;
+end /
+
+
+create trigger update_anno1
+before update
+on videogiochi
+for each row
+begin
+if (old.anno <> "tba") and (old.anno < 1990) then
+signal sqlstate '45000' 
+set message_text="non è possibile inserire un gioco con questa data";
+elseif (new.anno <> "tba") and (new.anno < 1990) then
+signal sqlstate '45000' 
+set message_text="non è possibile inserire un gioco con questa data";
+end if;
+end /
+
+
+
+create trigger insert_stato1
+before insert 
+on videogiochi
+for each row
+begin
+if new.stato not in ("in sviluppo","disponibile") then
+signal sqlstate '45000' 
+set message_text="seleziona una tra questi stati:in sviluppo o  disponibile";
+end if;
+end /
+
+
+create trigger update_stato1
+before update
+on videogiochi 
+for each row
+begin
+if new.stato not in ("in sviluppo","disponibile") then
+signal sqlstate '45000' 
+set message_text="seleziona una tra questi stati:in sviluppo o  disponibile";
+end if;
+end /
+
+
+create trigger max_2_genere
+before insert
+on appartenenza_genere
+for each row
+begin
+if exists(select count(*) from appartenenza_genere where videogiochi=new.videogiochi having count(*)=2) then
+signal sqlstate '45000'
+set message_text="il videogioco inserito possiede già due generi";
+end if;
+end /
+
+
+
+
+create trigger max_2_genere_update
+before update
+on appartenenza_genere
+for each row
+begin
+if exists(select count(*) from appartenenza_genere where videogiochi=new.videogiochi having count(*)=2) then
+signal sqlstate '45000'
+set message_text="il videogioco inserito possiede già due generi";
+end if;
+end /
+
+
+create trigger insert_pegi
+before insert 
+on videogiochi
+for each row
+begin
+if new.pegi not in("3","7","12","16","18") then
+signal sqlstate '45000' 
+set message_text="non puoi scrivere questo, prova con 3,7,12,16 e 18";
+end if;
+end /
+
+
+create trigger update_pegi
+before update
+on videogiochi
+for each row
+begin
+if new.pegi not in("3","7","12","16","18","non specificato") then
+signal sqlstate '45000' 
+set message_text="non puoi scrivere questo, prova con 3,7,12,16 e 18";
+end if;
+end /
+
+
+--ALTRI TRIGGER
+
+
+CREATE TRIGGER set_zero
+BEFORE INSERT ON software_house
+FOR EACH ROW 
+begin
+set new.n_giochi_sviluppati = COALESCE(NEW.n_giochi_sviluppati, '0');
+end /
+
+
+CREATE TRIGGER set_zero1
+BEFORE INSERT ON software_house
+FOR EACH ROW 
+begin
+set new.n_giochi_distribuiti = COALESCE(NEW.n_giochi_distribuiti, '0');
+end /
+
+
+CREATE TRIGGER set_zero2
+BEFORE INSERT ON game_director
+FOR EACH ROW 
+begin
+set new.n_giochi_diretti = COALESCE(NEW.n_giochi_diretti, '0');
+end /
+
+
+create trigger set_anno
+before insert on videogiochi
+for each row
+begin
+set new.anno = coalesce(new.anno, "tba");
+end /
+
+
+
+create trigger set_anno2
+before update on videogiochi
+for each row
+begin
+set new.anno = coalesce(new.anno, "tba");
+end /
+
+
+
+create trigger set_anno1
+before insert on edizione_videogiochi
+for each row
+begin
+set new.anno = coalesce(new.anno, "tba");
+end /
+
+
+create trigger set_anno21
+before update on edizione_videogiochi
+for each row
+begin
+set new.anno = coalesce(new.anno, "tba");
+end /
+
+
+create trigger set_pegi
+before insert on videogiochi
+for each row
+begin
+set new.pegi = coalesce(new.pegi, "non specificato");
+end /
+
+
+create trigger set_versione
+before insert on edizione_videogiochi
+for each row
+begin
+set new.versione = coalesce(new.versione, "non specificato");
+end /
+
+
+create trigger allineamento_giochi_sviluppati
+after insert
+on sviluppo
+for each row
+begin
+update software_house set n_giochi_sviluppati=n_giochi_sviluppati+1
+where nome=new.software_house;
+end /
+
+
+create trigger allineamento_giochi_sviluppati_update
+after update
+on sviluppo
+for each row
+begin
+update software_house set n_giochi_sviluppati=n_giochi_sviluppati+1
+where nome=new.software_house;
+update software_house set n_giochi_sviluppati=n_giochi_sviluppati-1
+where nome=old.software_house;
+end /
+
+
+
+create trigger allineamento_giochi_sviluppati_eliminazione
+after delete
+on sviluppo
+for each row
+begin
+update software_house set n_giochi_sviluppati=n_giochi_sviluppati-1
+where nome=old.software_house;
+end /
+
+
+create trigger allineamento_giochi_distribuiti
+after insert
+on distribuzione
+for each row
+begin
+update software_house set n_giochi_distribuiti=n_giochi_distribuiti+1
+where nome=new.software_house;
+end /
+
+
+create trigger allineamento_giochi_distribuiti_update
+after update
+on distribuzione
+for each row
+begin
+update software_house set n_giochi_distribuiti=n_giochi_distribuiti+1
+where nome=new.software_house;
+update software_house set n_giochi_distribuiti=n_giochi_distribuiti-1
+where nome=old.software_house;
+end /
+
+
+create trigger allineamento_giochi_distribuiti_eliminazione
+after delete
+on distribuzione
+for each row
+begin
+update software_house set n_giochi_distribuiti=n_giochi_distribuiti-1
+where nome=old.software_house;
+end /
+
+
+create trigger allineamento_giochi_diretti
+after insert
+on direzione
+for each row
+begin
+update game_director set n_giochi_diretti=n_giochi_diretti+1
+where nome=new.director;
+end /
+
+
+create trigger allineamento_giochi_diretti_update
+after update
+on direzione
+for each row
+begin
+update game_director set n_giochi_diretti=n_giochi_diretti+1
+where nome=new.director;
+update game_director set n_giochi_diretti=n_giochi_diretti-1
+where nome=old.director;
+end /
+
+
+create trigger allineamento_giochi_diretti_eliminazione
+after delete
+on direzione
+for each row
+begin
+update game_director set n_giochi_diretti=n_giochi_diretti-1
+where nome=old.director;
+end /
+
+
+create trigger insert_generazione_console
+before insert 
+on console
+for each row
+begin
+set new.generazione =
+case
+when (new.anno_uscita > 1990 and new.anno_uscita < 1998) then "5° generazione"
+when (new.anno_uscita > 1997 and new.anno_uscita < 2004) then "6° generazione"
+when (new.anno_uscita > 2003 and new.anno_uscita < 2011) then "7° generazione"
+when (new.anno_uscita > 2010 and new.anno_uscita < 2020) then "8° generazione"
+else null
+end;
+end /
+
+
+--PROCEDURE
+
+
+create procedure scegli_console(in nome varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(console varchar(89), videogioco varchar(89));
+insert into temp
+select console,videogiochi
+from disponibilità
+where console=nome;
+select * from temp order by videogioco;
+end / 
+
+
+create procedure scegli_console_genere(in nome varchar(89),in genere varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(console varchar(89), videogioco varchar(89));
+insert into temp
+select distinct d.console,d.videogiochi
+from disponibilità as d join appartenenza_genere as a
+on d.videogiochi=a.videogiochi 
+where d.console=nome and a.genere=genere;
+select * from temp order by videogioco;
+end / 
+
+
+create procedure scegli_edizione(in nome_videogioco varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(videogioco varchar(89), edizione varchar(89), versione varchar(89), stato varchar(89), console varchar(89));
+insert into temp
+select distinct d.videogiochi,d.edizione,d.versione,e.stato,d.console
+from disponibilità_edizione as d join edizione_videogiochi as e
+on d.videogiochi=e.nome
+where d.videogiochi=nome_videogioco;
+select * from temp order by edizione;
+end /
+
+
+create procedure scegli_serie(in nome_serie varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(capitoli varchar(89));
+select nome as capitoli from videogiochi where serie=nome_serie;
+select * from temp order by capitoli;
+end /
+
+
+
+create procedure count_sviluppo
+(out n_giochi varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(software_house varchar(89),n_giochi_sviluppato int);
+insert into temp
+select nome,n_giochi_sviluppati from software_house;
+select * from temp order by software_house;
+end/
+
+
+create procedure count_distribuzione
+(out n_giochi varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(software_house varchar(89),n_giochi_distribuiti int);
+insert into temp
+select nome,n_giochi_distribuiti from software_house;
+select * from temp order by software_house;
+end/
+
+
+create procedure count_director
+(out n_giochi varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(nome varchar(89),n_giochi int);
+insert into temp
+select nome,n_giochi_diretti from game_director;
+select * from temp order by nome;
+end/
+
+
+create procedure count_console
+(out n_giochi varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(console varchar(89),n_giochi_disponibili int);
+insert into temp
+select console,count(*) as n from disponibilità group by console;
+select * from temp order by console;
+end/
+
+
+create procedure informazione_director
+(in nome_director varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp(nome varchar(89), software_house varchar(89), anno_inizio int, anni_in_azienda int);
+insert into temp
+select g.nome, g.software_house,g.anno_inizio,g.anni_in_azienda from game_director as g union select l.director,l.software_house,l.anno_inizio,l.anni_in_azienda from lavoro_passato
+as l order by anno_inizio;
+select * from temp where nome=nome_director;
+end /
+
+
+create procedure director_direzione
+(in nome_director varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp( videogiochi varchar(89),nome varchar(89));
+insert into temp
+select * from direzione where director=nome_director;
+select * from temp order by videogiochi;
+end /
+
+
+create procedure sh_sviluppo
+(in nome_sh varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp( videogiochi varchar(89),software_house varchar(89));
+insert into temp
+select * from sviluppo where software_house=nome_sh;
+select * from temp order by software_house;
+end /
+
+
+create procedure sh_distribuzione
+(in nome_sh varchar(89))
+begin
+drop table if exists temp;
+create temporary table temp( videogiochi varchar(89),software_house varchar(89));
+insert into temp
+select * from distribuzione where software_house=nome_sh;
+select * from temp order by software_house;
+end /
+
+
+create procedure max_director
+(out director varchar (89))
+begin 
+select nome,n_giochi_diretti from game_director where n_giochi_diretti = (select max(n_giochi_diretti) from game_director);
+end /
+
+
+create procedure max_sh_sviluppo
+(out sh varchar (89))
+begin 
+select nome,n_giochi_sviluppati from software_house where n_giochi_sviluppati = (select max(n_giochi_sviluppati) from software_house);
+end /
+
+
+create procedure max_sh_distribuzione
+(out sh varchar (89))
+begin 
+select nome,n_giochi_distribuiti from software_house where n_giochi_distribuiti = (select max(n_giochi_distribuiti) from software_house);
+end /
+
+
+
+
+
+
+
